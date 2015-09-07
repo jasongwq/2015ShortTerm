@@ -1,0 +1,8 @@
+Change Component Footprint: Designator=U7 Old Footprint=DIP20 New Footprint=SOP241
+Change Component Footprint: Designator=U8 Old Footprint=DIP20 New Footprint=SOP241
+Change Component Footprint: Designator=U2 Old Footprint=DIP20 New Footprint=SOP4510
+Change Component Designator: OldDesignator=U? NewDesignator=U6
+Added Pin To Net: NetName=SD3 Pin=U2-21
+Added Pin To Net: NetName=SD4 Pin=U2-22
+Added Pin To Net: NetName=GND Pin=U2-23
+Added Pin To Net: NetName=DP Pin=U2-24

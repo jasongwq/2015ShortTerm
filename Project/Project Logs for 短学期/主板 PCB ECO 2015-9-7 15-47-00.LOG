@@ -1,0 +1,12 @@
+Added Component: Designator=U10(DIP16)
+Added Pin To Net: NetName=VOICE3 Pin=U10-1
+Added Pin To Net: NetName=VOICE4 Pin=U10-2
+Added Pin To Net: NetName=DP Pin=U10-3
+Added Pin To Net: NetName=NetC13_2 Pin=U10-4
+Added Pin To Net: NetName=VOICEOUT Pin=U10-5
+Added Pin To Net: NetName=DP Pin=U10-6
+Added Pin To Net: NetName=DP Pin=U10-7
+Added Pin To Net: NetName=VOICE2 Pin=U10-8
+Added Pin To Net: NetName=GND Pin=U10-14
+Added Pin To Net: NetName=VOICE1 Pin=U10-16
+Added Member To Class: ClassName=Ö÷°å Member=Component U10 YX5P055

@@ -1,0 +1,14 @@
+Added Component: Designator=J3(TDA2030)
+Added Component: Designator=J4(TDA2030)
+Added Pin To Net: NetName=NetC9_1 Pin=J3-1
+Added Pin To Net: NetName=NetC11_1 Pin=J3-2
+Added Pin To Net: NetName=-12 Pin=J3-3
+Added Pin To Net: NetName=VOUT1+ Pin=J3-4
+Added Pin To Net: NetName=+12 Pin=J3-5
+Added Pin To Net: NetName=NetC10_1 Pin=J4-1
+Added Pin To Net: NetName=NetC12_1 Pin=J4-2
+Added Pin To Net: NetName=-12 Pin=J4-3
+Added Pin To Net: NetName=VOUT1- Pin=J4-4
+Added Pin To Net: NetName=+12 Pin=J4-5
+Added Member To Class: ClassName=功放 Member=Component J3 TDA2030
+Added Member To Class: ClassName=功放 Member=Component J4 TDA2030
