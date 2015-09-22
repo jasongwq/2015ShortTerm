@@ -1,0 +1,9 @@
+"STARTUP.obj",
+"main.obj",
+"DS1302.obj",
+"Key.obj",
+"24C08.obj",
+"Delay.obj",
+"DisPlay.obj",
+"Alarm.obj" 
+TO "Alarm" 

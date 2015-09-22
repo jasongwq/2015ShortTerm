@@ -1,0 +1,122 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              09/22/2015 13:52:49 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2) PREPRINT
+
+line level    source
+
+   1          #include < reg52.h>
+   2          #include "mian.h"
+   3          #include "delay.h"
+   4          #include "key.h"
+   5          #include "ds1302.h"
+   6          #include "24c08.h"
+   7          #include "alarm.h"
+   8          #include "display.h"
+   9          
+  10          
+  11          
+  12          void main()
+  13          {
+  14   1        TimeInit();
+  15   1        DS1302_Write(7, 0x13, 1, 0x20, 0x09, 0x04, 0x15);
+  16   1        while (1)
+  17   1        {
+  18   2          uchar key;
+  19   2          static uchar  fn1, fn2, esc = 1, alarm, n, alarmNum, enter;
+  20   2          static Tim tim;
+  21   2          /******************报警检测*********************/
+  22   2          if (n = AlarmMonitor())
+  23   2          {
+  24   3            alarm = 1;
+  25   3            esc = 0;
+  26   3            T5 = 0;
+  27   3            alarmNum = n;
+  28   3            tim = DS1302_readtime();
+  29   3            Alarm_Save(alarmNum, tim);
+  30   3          }
+  31   2          /******************按键扫描*********************/
+  32   2          key = KeyGet();
+  33   2          /******************功能*********************/
+  34   2          if (key == KEY_FN)
+  35   2          {
+  36   3            esc = 0;
+  37   3            fn1 = !fn1;
+  38   3            fn2 = !fn1;
+  39   3          }
+  40   2          if (key == KEY_ESC)
+  41   2          {
+  42   3            esc = 1;
+  43   3            alarm = 0;
+  44   3            enter = 0;
+  45   3            fn1 = 0;
+  46   3            fn2 = 0;
+  47   3          }
+  48   2          if (key == KEY_ENTER)
+  49   2          {
+  50   3            enter = 1;
+  51   3          }
+  52   2          if (esc)
+  53   2          {
+  54   3            DS1302_readtime();
+  55   3            DS1302_SMG_display_ex(13);
+C51 COMPILER V9.52.0.0   MAIN                                                              09/22/2015 13:52:49 PAGE 2   
+
+  56   3          }
+  57   2          else
+  58   2          {
+  59   3            /*****报警检测状态*****/
+  60   3            if (alarm)
+  61   3            {
+  62   4              if (S5)
+  63   4              {
+  64   5                S5 = 0;
+  65   5                alarm = 0;
+  66   5                esc = 1;
+  67   5              }
+  68   4              DS1302_SMG_display(0x20, tim.year, tim.month, tim.day, tim.hour, tim.min, alarmNum);
+  69   4            }
+  70   3            /*****F1功能*****/
+  71   3            else if (fn1)
+  72   3            {
+  73   4              if (!enter)
+  74   4              {
+  75   5                DisF(1);/*显示F1*/
+  76   5              }
+  77   4              else if (!DS1302_RTC_Seting(key)) 
+  78   4              {
+  79   5                esc = 1;
+  80   5                enter = 0;
+  81   5                fn1 = 0;
+  82   5                fn2 = 0;
+  83   5              }
+  84   4            }
+  85   3            /*****F2功能*****/
+  86   3            else if (fn2)
+  87   3            {
+  88   4              if (!enter)
+  89   4              {
+  90   5                DisF(2);/*显示F2*/
+  91   5              }
+  92   4              else
+  93   4                AlarmList(key);
+  94   4            }
+  95   3          }
+  96   2        }
+  97   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    296    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

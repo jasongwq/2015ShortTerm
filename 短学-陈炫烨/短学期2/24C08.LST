@@ -1,0 +1,165 @@
+C51 COMPILER V9.52.0.0   24C08                                                             09/22/2015 13:47:27 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE 24C08
+OBJECT MODULE PLACED IN 24C08.OBJ
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE 24C08.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2) PREPRINT
+
+line level    source
+
+   1          #include "24c08.h"
+   2          #include "delay.h"
+   3          
+   4          void i2cinit()//总线初始化
+   5          {
+   6   1       SDA = 1;
+   7   1       delay(1);
+   8   1       SCL = 1;
+   9   1       delay(1);
+  10   1      }
+  11          void start()//启动信号
+  12          {
+  13   1       SDA = 1;
+  14   1       SCL = 1;
+  15   1       delay(1);
+  16   1       SDA = 0;
+  17   1       delay(1);
+  18   1      }
+  19          void stop()//停止信号
+  20          {
+  21   1       SDA = 0;
+  22   1       delay(1);
+  23   1       SCL = 1;
+  24   1       delay(1);
+  25   1       SDA = 1;
+  26   1       delay(1);
+  27   1      }
+  28          void respons()//应答信号
+  29          {
+  30   1       unsigned char i = 0;
+  31   1       SCL = 1;
+  32   1       delay(1);
+  33   1       while(SDA == 1 && i < 255)//等待应答，过一段时间不应答退出循环
+  34   1        i++;
+  35   1       SCL = 0;
+  36   1       delay(1);
+  37   1      }
+  38          void writebyte(unsigned char date)//写一个字节
+  39          {
+  40   1       unsigned char i,temp;
+  41   1       temp = date;
+  42   1       for(i = 0; i < 8; i++)
+  43   1       {
+  44   2        temp <<= 1;//temp左移一位后高位进CY
+  45   2        SCL = 0;
+  46   2        delay(1);
+  47   2        SDA = CY;
+  48   2        delay(1);
+  49   2        SCL = 1;
+  50   2        delay(1);
+  51   2       } 
+  52   1       SCL = 0;//应答信号中SCL = 1，所以这里要置0
+  53   1       delay(1);
+  54   1       SDA = 1;//用完要释放数据总线
+  55   1       delay(1);
+C51 COMPILER V9.52.0.0   24C08                                                             09/22/2015 13:47:27 PAGE 2   
+
+  56   1      }
+  57          unsigned char readbyte()//读一个字节 
+  58          {
+  59   1       unsigned char i,k;
+  60   1       SCL = 0;
+  61   1       delay(1);
+  62   1       SDA = 1;
+  63   1       for(i = 0; i < 8; i++)
+  64   1       {
+  65   2        SCL = 1; 
+  66   2        delay(1);
+  67   2        k = (k << 1) | SDA; //和最低位或，一位位送到K
+  68   2        SCL = 0;
+  69   2        delay(1);
+  70   2       }
+  71   1       delay(1);
+  72   1       return k;
+  73   1      }
+  74          void write_add(unsigned char address,unsigned char date)//向地址写一个字节数据
+  75          {
+  76   1       start();
+  77   1       writebyte(0xa0);//A0,A1,A2接地，AT24C02芯片地址为1010，送控制字为1010A2A1A0R/~W
+  78   1       respons();
+  79   1       writebyte(address);
+  80   1       respons();
+  81   1       writebyte(date);
+  82   1       respons();
+  83   1       stop();
+  84   1      }
+  85          unsigned char read_add(unsigned char address)//向地址读一个字节数据
+  86          {
+  87   1       unsigned char date;
+  88   1       start();
+  89   1       writebyte(0xa0);//A0,A1,A2接地，AT24C02芯片地址为1010，送控制字为1010A2A1A0R/~W
+  90   1       respons();
+  91   1       writebyte(address);
+  92   1       respons();
+  93   1       start();
+  94   1       writebyte(0xa1);//A0,A1,A2接地，AT24C02芯片地址为1010，送控制字为1010A2A1A0R/~W
+  95   1       respons();
+  96   1       date = readbyte();
+  97   1       stop();
+  98   1       return date;
+  99   1      }
+ 100          
+ 101          //向地址写n个字节数据,数据存放在指针P指的数组中
+ 102          unsigned char write_n_add(unsigned char * p,unsigned char address,unsigned char n)
+ 103          {
+ 104   1         unsigned char i;
+ 105   1         for(i = 0; i < n; i++)
+ 106   1         {
+ 107   2            write_add((address + i),*(p + i));
+ 108   2            //write_add(address++,*(p + i));
+ 109   2            delay_ms(20);//一定要适当延时，不然写不进去
+ 110   2         }
+ 111   1         return  (address + i);
+ 112   1      }
+ 113          //向地址读n个字节数据,数据存放在指针P指的数组中
+ 114          unsigned char read_n_add(unsigned char * p,unsigned char address,unsigned char n)
+ 115          {
+ 116   1       unsigned char i;
+ 117   1       for(i = 0; i < n; i++)
+C51 COMPILER V9.52.0.0   24C08                                                             09/22/2015 13:47:27 PAGE 3   
+
+ 118   1       {
+ 119   2        *(p + i) = read_add(address + i);
+ 120   2       // *(p + i) = read_add(address++);
+ 121   2        
+ 122   2       }
+ 123   1       return  (address + i);
+ 124   1      }
+ 125          
+ 126          AlarmData Search(unsigned char count)
+ 127          {
+ 128   1        AlarmData alarmdata;
+ 129   1        read_n_add((unsigned char *)&alarmdata, (count)*9, 9);     
+ 130   1        return alarmdata;
+ 131   1      }
+ 132          
+ 133          unsigned char* Search2(unsigned char count)
+ 134          {
+ 135   1        unsigned char dat[8];
+ 136   1        read_n_add(dat, (count-1)*8+1, 8);     
+ 137   1        return dat;
+ 138   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    430    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      37
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

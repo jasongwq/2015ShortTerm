@@ -1,0 +1,84 @@
+C51 COMPILER V9.52.0.0   ALARM                                                             09/22/2015 13:52:33 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE ALARM
+OBJECT MODULE PLACED IN Alarm.OBJ
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Alarm.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2) PREPRINT
+
+line level    source
+
+   1          #include "alarm.h"
+   2          #include "key.h"
+   3          #include "24c08.h"
+   4          #include "mian.h"
+   5          #include "delay.h"
+   6          
+   7          
+   8          
+   9          uchar AlarmCnt;
+  10          /******************报警列表*********************/
+  11          void AlarmList(uchar key)
+  12          {
+  13   1        static uchar  count, n;
+  14   1        static idata uchar dat[8];
+  15   1        if (key == KEY_ENTER)
+  16   1        {
+  17   2          n = count = read_add(0);
+  18   2          read_n_add(dat, (n - 1) * 8 + 1, 8);
+  19   2        }
+  20   1        else if (key == KEY_UP)
+  21   1        {
+  22   2          if (n++ == count)n = 1;
+  23   2          read_n_add(dat, (n - 1) * 8 + 1, 8);
+  24   2        }
+  25   1        else if (key == KEY_DOWN)
+  26   1        {
+  27   2          if (n-- == 1) n = count;
+  28   2          read_n_add(dat, (n - 1) * 8 + 1, 8);
+  29   2        }
+  30   1        else if (key == KEY_5) AlarmCnt = 0;
+  31   1        DS1302_SMG_display(n / 10 * 16 + n % 10, dat[0], dat[1], dat[2], dat[3], dat[4], dat[7]);
+  32   1      }
+  33          /******************报警检测*********************/
+  34          uchar AlarmMonitor()
+  35          {
+  36   1        uchar n = 0;
+  37   1        if (!P1_4) {P3_0 = 0; return 1;}
+  38   1        if (!P1_5) {P3_1 = 0; return 2;}
+  39   1        if (!P1_6) {P3_2 = 0; return 3;}
+  40   1        if (!P1_7) {P3_3 = 0; return 4;}
+  41   1        return 0;
+  42   1      }
+  43          /******************报警保存*********************/
+  44          void Alarm_Save(uchar n, Tim tim)
+  45          {
+  46   1        static uchar address = 1;
+  47   1        idata uchar dat[8];
+  48   1        dat[0] = tim.year;
+  49   1        dat[1] = tim.month;
+  50   1        dat[2] = tim.day;
+  51   1        dat[3] = tim.hour;
+  52   1        dat[4] = tim.min;
+  53   1        dat[5] = tim.sec;
+  54   1        dat[6] = tim.week;
+  55   1        dat[7] = n;
+C51 COMPILER V9.52.0.0   ALARM                                                             09/22/2015 13:52:33 PAGE 2   
+
+  56   1        write_add(0, ++AlarmCnt);
+  57   1        delay_ms(20);
+  58   1        address = write_n_add(dat, address, 8);
+  59   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    240    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4      10
+   IDATA SIZE       =      8       8
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

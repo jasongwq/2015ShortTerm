@@ -1,0 +1,317 @@
+C51 COMPILER V9.52.0.0   DS1302                                                            09/22/2015 13:52:18 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE DS1302
+OBJECT MODULE PLACED IN DS1302.OBJ
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DS1302.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2) PREPRINT
+
+line level    source
+
+   1          #include "ds1302.h"
+   2          #include "delay.h"
+   3          #include "key.h"
+   4          code uchar seg7code[12] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x90, 0x8e, 0xff};  //ËùÐ
+             -èµÄ¶ÎµÄÎ»Âë
+   5          code uchar wei[13] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc}; //Î»µ
+             -Ä¿ØÖÆ¶Ë
+   6          
+   7          uchar   sec, min, hour, day, month, week, year; //Ê±¼ä±äÁ¿
+   8          uchar   secH, secL, minH, minL, hourH, hourL, dayH, dayL, monthH, monthL, week, yearH, yearL;
+   9          //**************************
+  10          uchar DS1302_RTC_Seting(uchar key)
+  11          {
+  12   1        static uchar wela;
+  13   1        if (key == KEY_RIGHT)
+  14   1        {
+  15   2          if (wela == 12)
+  16   2          {
+  17   3            wela = 0;
+  18   3          }
+  19   2          else
+  20   2          {
+  21   3            wela++;
+  22   3          }
+  23   2        }
+  24   1        else if (key == KEY_LEFT)
+  25   1        {
+  26   2          if (wela == 0)
+  27   2          {
+  28   3            wela = 12;
+  29   3          }
+  30   2          else
+  31   2          {
+  32   3            wela--;
+  33   3          }
+  34   2        }
+  35   1        else if (key == KEY_UP)
+  36   1        {
+  37   2          switch (wela)
+  38   2          {
+  39   3          case 12: if (week++ == 7) week = 0 ; break;
+  40   3          case 11: if (minL++ == 9) minL = 0 ; break;
+  41   3          case 10: if (minH++ == 6) minH = 0 ; break;
+  42   3          case 9: if (hourL++ == 9) hourL = 0; break;
+  43   3          case 8: if (hourH++ == 6) hourH = 0; break;
+  44   3          case 7: if (dayL++ == 9) dayL = 0 ; break;
+  45   3          case 6: if (dayH++ == 3) dayH = 0 ; break;
+  46   3          case 5: if (monthL++ == 9) monthL = 0 ; break;
+  47   3          case 4: if (monthH++ == 1) monthH = 0 ; break;
+  48   3          case 3: if (yearL++ == 9) yearL = 0 ; break;
+  49   3          case 2: if (yearH++ == 9) yearH = 0 ; break;
+  50   3          case 1:  break;
+  51   3          case 0:  break;
+  52   3          default: break;
+  53   3          }
+C51 COMPILER V9.52.0.0   DS1302                                                            09/22/2015 13:52:18 PAGE 2   
+
+  54   2        }
+  55   1        else if (key == KEY_DOWN)
+  56   1        {
+  57   2          switch (wela)
+  58   2          {
+  59   3          case 12: if (week-- == 0) week = 7; break;
+  60   3          case 11: if (minL-- == 0) minL = 9; break;
+  61   3          case 10: if (minH-- == 0) minH = 6; break;
+  62   3          case 9: if (hourL-- == 0) hourL = 9; break;
+  63   3          case 8: if (hourH-- == 0) hourL = 6; break;
+  64   3          case 7: if (dayL-- == 0) dayL = 9; break;
+  65   3          case 6: if (dayH-- == 0) dayH = 3; break;
+  66   3          case 5: if (monthL-- == 0) monthL = 9; break;
+  67   3          case 4: if (monthH-- == 0) monthL = 1; break;
+  68   3          case 3: if (yearL-- == 0) yearL = 9; break;
+  69   3          case 2: if (yearH-- == 0) yearH = 9; break;
+  70   3          default: break;
+  71   3          }
+  72   2        }
+  73   1        else if (key == KEY_ENTER)
+  74   1        { static uchar n;
+  75   2          n = !n;
+  76   2          sec = secH << 4 | secL;
+  77   2          min = minH << 4 | minL;
+  78   2          hour = hourH << 4 | hourL;
+  79   2          day = dayH << 4 | dayL;
+  80   2          month = monthH << 4 | monthL;
+  81   2          year = yearH << 4 | yearL;
+  82   2          DS1302_Write(sec, min, hour, day, month, week, year);
+  83   2          if (!n) return 0;
+  84   2        }
+  85   1        if (minH * 10 + minL > 60)
+  86   1        {
+  87   2          minH = 6;
+  88   2          minL = 0;
+  89   2        }
+  90   1        if (hourH * 10 + hourL > 60)
+  91   1        {
+  92   2          hourH = 6;
+  93   2          hourL = 0;
+  94   2        }
+  95   1        if (monthH * 10 + monthL > 12)
+  96   1        {
+  97   2          monthH = 1;
+  98   2          monthL = 2;
+  99   2        }
+ 100   1        if (dayH * 10 + dayL > 31)
+ 101   1        {
+ 102   2          dayH = 3;
+ 103   2          dayL = 1;
+ 104   2        }
+ 105   1        DS1302_SMG_display_ex(wela);
+ 106   1        return 1;
+ 107   1      }
+ 108          
+ 109          uchar  DS1302_addr[] = {
+ 110            0x80, //0,Ð´ÈëÃë(Second)¼Ä´æÆ÷
+ 111            0x81, //1,¶Á³öÃë(Second)¼Ä´æÆ÷
+ 112            0x8a, //10,Ð´ÈëÖÜ(Week)¼Ä´æÆ÷
+ 113            0x8b, //11,¶Á³öÖÜ(Week)¼Ä´æÆ÷
+ 114            0x82, //2,Ð´Èë·Ö(Minute)¼Ä´æÆ÷
+ 115            0x83, //3,¶Á³ö·Ö(Minute)¼Ä´æÆ÷
+C51 COMPILER V9.52.0.0   DS1302                                                            09/22/2015 13:52:18 PAGE 3   
+
+ 116            0x84, //4,Ð´ÈëÐ¡Ê±(Hour)¼Ä´æÆ÷
+ 117            0x85, //5,¶Á³öÐ¡Ê±(Hour)¼Ä´æÆ÷
+ 118            0x86, //6,Ð´ÈëÈÕ(Day)¼Ä´æÆ÷
+ 119            0x87, //7,¶Á³öÈÕ(Day)¼Ä´æÆ÷
+ 120            0x88, //8,Ð´ÈëÔÂ·Ý(Month)¼Ä´æÆ÷
+ 121            0x89, //9,¶Á³öÔÂ·Ý(Month)¼Ä´æÆ÷
+ 122            0x8c, //12,Ð´ÈëÄê·Ý(Year)¼Ä´æÆ÷
+ 123            0x8d, //13,¶Á³öÄê·Ý(Year)¼Ä´æÆ÷
+ 124            0x8e, //14,Ð´±£»¤_¼Ä´æÆ÷
+ 125            0x8f  //15,ä¸Á÷³äµç
+ 126          
+ 127          }  ;
+ 128          
+ 129          void SMG_display(uchar wela, uchar n)
+ 130          {
+ 131   1        P1 = 0XFF;
+ 132   1        P2 = seg7code[n];
+ 133   1        P1 = wei[wela];
+ 134   1        delay(10);
+ 135   1      }
+ 136          //***************Ð´ÈëÒ»×Ö½Ú***********************
+ 137          void DS1302_Input_Byte(uchar Input)  //ÏòÊ±ÖÓICÐ´ÈëÒ»×Ö½Ú
+ 138          {
+ 139   1        uchar i;
+ 140   1        ACC = Input;
+ 141   1        for (i = 8; i > 0; i--)
+ 142   1        {
+ 143   2          T_DIO = ACC_0;            //Ïàµ±ÓÚ»ã±àÖÐµÄ RRC
+ 144   2          T_SCLK = 1;
+ 145   2          T_SCLK = 0;
+ 146   2          ACC = ACC >> 1;
+ 147   2        }
+ 148   1      }
+ 149          //**************¶ÁÈ¡Ò»×Ö½Ú()*************************
+ 150          uchar DS1302_Output_Byte(void)      //´ÓÊ±ÖÓIC¶ÁÈ¡Ò»×Ö½Ú()
+ 151          {
+ 152   1        uchar i;
+ 153   1        for (i = 8; i > 0; i--)
+ 154   1        {
+ 155   2          ACC >>= 1; T_DIO = 1;
+ 156   2          ACC_7 = T_DIO;
+ 157   2          T_SCLK = 1;                 //Ïàµ±ÓÚ»ã±àÖÐµÄ RRC
+ 158   2          T_SCLK = 0;
+ 159   2        }
+ 160   1        return (ACC);
+ 161   1      }
+ 162          //**************ÏòÊ±ÖÓICÐ´Êý¾Ý*************************
+ 163          void DS1302_Write_one( uchar addr, dat )      // Ð´ÈëµØÖ·¡¢Êý¾Ý×Ó³ÌÐò
+ 164          {
+ 165   1        T_CE = 0;                           //T_CEÒý½ÅÎªµÍ£¬Êý¾Ý´«ËÍÖÐÖ¹
+ 166   1        T_SCLK = 0;                        //ÇåÁãÊ±ÖÓ×ÜÏß
+ 167   1        T_CE = 1;                          //T_CEÒý½ÅÎª¸ß£¬Âß¼­¿ØÖÆÓÐÐ§
+ 168   1        DS1302_Input_Byte(addr);           // µØÖ·£¬ÃüÁî
+ 169   1        DS1302_Input_Byte(dat);          // Ð´1ByteÊý¾Ý
+ 170   1        T_SCLK = 1;
+ 171   1        T_CE = 0;
+ 172   1      }
+ 173          //************´ÓÊý¾Ý¶ÁÈ¡Êý¾Ý*****************************
+ 174          uchar DS1302_Read ( uchar addr )    //Êý¾Ý¶ÁÈ¡×Ó³ÌÐò
+ 175          {
+ 176   1        uchar date;
+ 177   1        T_CE = 0;
+C51 COMPILER V9.52.0.0   DS1302                                                            09/22/2015 13:52:18 PAGE 4   
+
+ 178   1        T_SCLK = 0;
+ 179   1        T_CE = 1;
+ 180   1        DS1302_Input_Byte(addr);        // µØÖ·£¬ÃüÁî
+ 181   1        date = DS1302_Output_Byte();         // ¶Á1ByteÊý¾Ý
+ 182   1        T_SCLK = 1;
+ 183   1        T_CE = 0;
+ 184   1        return (date);
+ 185   1      }
+ 186          //************´ÓÊý¾Ý¶ÁÈ¡Êý¾Ý****************************
+ 187          void DS1302_Write( uchar sec_w, min_w, hour_w, day_w, month_w, week_w, year_w )
+ 188          {
+ 189   1        DS1302_Write_one(0x8e, 0x00);
+ 190   1        DS1302_Write_one(0x80, sec_w);
+ 191   1        DS1302_Write_one(0x82, min_w);
+ 192   1        DS1302_Write_one(0x84, hour_w);
+ 193   1        DS1302_Write_one(0x86, day_w);
+ 194   1        DS1302_Write_one(0x88, month_w);
+ 195   1        DS1302_Write_one(0x8a, week_w);
+ 196   1        DS1302_Write_one(0x8c, year_w);
+ 197   1        DS1302_Write_one(0x8e, 0x80);
+ 198   1      }
+ 199          
+ 200          //************´ÓÊý¾Ý¶ÁÈ¡Êý¾Ý*****************************
+ 201          //void DS1302_readtime_ex(uchar* )
+ 202          //{
+ 203          //
+ 204          //}
+ 205          
+ 206          Tim DS1302_readtime()
+ 207          {
+ 208   1        Tim timdat;
+ 209   1        sec = DS1302_Read(0x81);                  //¶ÁÃë
+ 210   1        secH = sec >> 4;
+ 211   1        secL = sec & 0x0f;
+ 212   1        min = DS1302_Read(0x83);                  //¶Á·Ö
+ 213   1        minH = min >> 4;
+ 214   1        minL = min & 0x0f;
+ 215   1        hour = DS1302_Read(0x85);                 //¶ÁÊ±
+ 216   1        hourH = hour >> 4;
+ 217   1        hourL = hour & 0x0f;
+ 218   1        day = DS1302_Read(0x87);                  //¶ÁÈÕ
+ 219   1        dayH = day >> 4;
+ 220   1        dayL = day & 0x0f;
+ 221   1        month = DS1302_Read(0x89);                //¶ÁÔÂ
+ 222   1        monthH = month >> 4;
+ 223   1        monthL = month & 0x0f;
+ 224   1        year = DS1302_Read(0x8d);   //¶ÁÄê
+ 225   1        yearH = year >> 4;
+ 226   1        yearL = year & 0x0f;
+ 227   1        week = DS1302_Read(0x8b);    //¶ÁÐÇÆÚ
+ 228   1        timdat.sec = sec;
+ 229   1        timdat.min = min;
+ 230   1        timdat.hour = hour;
+ 231   1        timdat.day = day;
+ 232   1        timdat.month = month;
+ 233   1        timdat.year = year;
+ 234   1        timdat.week = week;
+ 235   1        return timdat;
+ 236   1      }
+ 237          //************ÊýÂë¹ÜDS1302ÏÔÊ¾*****************************
+ 238          void DS1302_SMG_display_ex(uchar wela)
+ 239          {
+C51 COMPILER V9.52.0.0   DS1302                                                            09/22/2015 13:52:18 PAGE 5   
+
+ 240   1        static uchar s1;
+ 241   1        s1 = S1;
+ 242   1        if (wela == 12 && s1) {SMG_display(12, 11);}
+ 243   1        else SMG_display(12, week);
+ 244   1        if (wela == 11 && s1) {SMG_display(11, 11);}
+ 245   1        else  SMG_display(11, minL);
+ 246   1        if (wela == 10 && s1) {SMG_display(10, 11);}
+ 247   1        else SMG_display(10, minH);
+ 248   1        if (wela == 9 && s1) {SMG_display(9, 11);}
+ 249   1        else SMG_display(9, hourL);
+ 250   1        if (wela == 8 && s1) {SMG_display(8, 11);}
+ 251   1        else SMG_display(8, hourH);
+ 252   1        if (wela == 7 && s1) {SMG_display(7, 11);}
+ 253   1        else SMG_display(7, dayL);
+ 254   1        if (wela == 6 && s1) {SMG_display(6, 11);}
+ 255   1        else SMG_display(6, dayH);
+ 256   1        if (wela == 5 && s1) {SMG_display(5, 11);}
+ 257   1        else SMG_display(5, monthL);
+ 258   1        if (wela == 4 && s1) {SMG_display(4, 11);}
+ 259   1        else SMG_display(4, monthH);
+ 260   1        if (wela == 3 && s1) {SMG_display(3, 11);}
+ 261   1        else SMG_display(3, yearL);
+ 262   1        if (wela == 2 && s1) {SMG_display(2, 11);}
+ 263   1        else SMG_display(2, yearH);
+ 264   1        if (wela == 1 && s1) {SMG_display(1, 11);}
+ 265   1        else SMG_display(1, 0);
+ 266   1        if (wela == 0 && s1) {SMG_display(0, 11);}
+ 267   1        else SMG_display(0, 2);
+ 268   1      }
+ 269          void DS1302_SMG_display(uchar dat0, dat1, dat2, dat3, dat4, dat5, dat6)
+ 270          {
+ 271   1        SMG_display(12, dat6);
+ 272   1        SMG_display(11, dat5 % 0x10);
+ 273   1        SMG_display(10, dat5 / 0x10);
+ 274   1        SMG_display(9, dat4 % 0x10);
+ 275   1        SMG_display(8, dat4 / 0x10);
+ 276   1        SMG_display(7, dat3 % 0x10);
+ 277   1        SMG_display(6, dat3 / 0x10);
+ 278   1        SMG_display(5, dat2 % 0x10);
+ 279   1        SMG_display(4, dat2 / 0x10);
+ 280   1        SMG_display(3, dat1 % 0x10);
+ 281   1        SMG_display(2, dat1 / 0x10);
+ 282   1        SMG_display(1, dat0 % 0x10);
+ 283   1        SMG_display(0, dat0 / 0x10);
+ 284   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1580    ----
+   CONSTANT SIZE    =     25    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     38      34
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
